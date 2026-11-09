@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Pelajar Juara</title>
+<style>
+:root{
+  --c1:#6366f1; --c2:#ec4899;
+  --bg:#0b1020; --card:rgba(255,255,255,.08); --line:rgba(255,255,255,.16);
+  --text:#f8fafc; --muted:#cbd5e1;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  color:var(--text);background:var(--bg);overflow-x:hidden;min-height:100vh}
+.bg{position:fixed;inset:0;z-index:-2;
+  background:linear-gradient(135deg,var(--c1),var(--bg) 45%,var(--c2));
+  background-size:300% 300%;animation:flow 14s ease infinite;transition:background .6s}
+@keyframes flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.4;z-index:-1;animation:float 16s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:var(--c1);top:-80px;left:-80px}
+.blob.b2{width:400px;height:400px;background:var(--c2);bottom:-120px;right:-100px;animation-delay:-5s}
+.blob.b3{width:240px;height:240px;background:#22d3ee;top:40%;left:55%;animation-delay:-9s;opacity:.25}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-50px) scale(1.15)}}
+.stars{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.stars i{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;opacity:0;animation:twinkle 4s infinite}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:.9;transform:scale(1.3)}}
+.wrap{max-width:1000px;margin:0 auto;padding:18px 16px 40px}
+.screen{display:none;animation:pop .45s ease}
+.screen.active{display:block}
+@keyframes pop{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.logo{font-weight:900;font-size:1.25rem;letter-spacing:.5px;
+  background:linear-gradient(90deg,#fde047,#fb7185,#a78bfa,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;
+  background-size:200% auto;animation:shine 5s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.iconbtns{display:flex;gap:8px}
+.ibtn{border:1px solid var(--line);background:var(--card);color:var(--text);width:42px;height:42px;border-radius:12px;font-size:1.15rem;
+  cursor:pointer;backdrop-filter:blur(8px);transition:.2s}
+.ibtn:hover{transform:translateY(-2px) scale(1.06);background:rgba(255,255,255,.18)}
+.ibtn.off{opacity:.45;filter:grayscale(1)}
+.hero{text-align:center;margin:14px 0 22px}
+.hero h1{font-size:clamp(1.7rem,5vw,2.6rem);font-weight:900;text-shadow:0 4px 24px rgba(0,0,0,.4)}
+.hero p{color:var(--muted);margin-top:8px;font-size:.98rem}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.badge{padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.82rem;backdrop-filter:blur(6px)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.subj{position:relative;border:none;color:#fff;text-align:left;cursor:pointer;border-radius:20px;padding:18px 16px;overflow:hidden;
+  background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 10px 26px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.25);
+  transition:transform .25s,box-shadow .25s;min-height:132px;font-family:inherit}
+.subj::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 0%,rgba(255,255,255,.35),transparent 55%);pointer-events:none}
+.subj:hover{transform:translateY(-6px) rotate(-.6deg) scale(1.03);box-shadow:0 18px 34px rgba(0,0,0,.45),0 0 28px var(--a)}
+.subj:active{transform:scale(.97)}
+.subj .em{font-size:2.3rem;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35));animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.subj .nm{font-weight:800;font-size:1.08rem;margin-top:6px;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+.subj .st{font-size:.76rem;opacity:.95;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+.subj .st span{background:rgba(0,0,0,.25);padding:2px 8px;border-radius:999px}
+.footer-note{text-align:center;color:var(--muted);font-size:.78rem;margin-top:22px}
+.qhead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.chip{padding:7px 14px;border-radius:999px;font-weight:700;font-size:.85rem;border:1px solid var(--line);background:var(--card);backdrop-filter:blur(8px)}
+.chip.subjchip{background:linear-gradient(90deg,var(--c1),var(--c2));border:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.chip.timer-chip{background:linear-gradient(90deg,#0ea5e9,#22d3ee);border:none;font-variant-numeric:tabular-nums;transition:.3s;min-width:82px;text-align:center}
+.chip.timer-chip.warn{background:linear-gradient(90deg,#f59e0b,#f97316);animation:pulse 1s infinite}
+.chip.timer-chip.danger{background:linear-gradient(90deg,#ef4444,#dc2626);animation:pulse .5s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.spacer{flex:1}
+.btn-back{border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:.9rem;color:#fff;padding:9px 16px;border-radius:999px;
+  background:linear-gradient(135deg,#f43f5e,#f97316);box-shadow:0 6px 18px rgba(244,63,94,.45),inset 0 0 0 1px rgba(255,255,255,.3);transition:.2s}
+.btn-back:hover{transform:translateX(-4px) scale(1.04);filter:brightness(1.1)}
+.btn-back:active{transform:scale(.96)}
+.tally-ok{background:rgba(34,197,94,.28);border-color:rgba(134,239,172,.7);color:#dcfce7}
+.tally-no{background:rgba(239,68,68,.28);border-color:rgba(252,165,165,.7);color:#fee2e2}
+.chip.bump{animation:bump .5s}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+.progress{height:12px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden;margin-bottom:16px;border:1px solid var(--line)}
+.progress>div{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6,#fde047);background-size:200% 100%;
+  animation:shine 3s linear infinite;transition:width .5s cubic-bezier(.2,.9,.3,1.2)}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;backdrop-filter:blur(14px);
+  box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.qno{font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
+.qtext{font-size:clamp(1.05rem,2.6vw,1.3rem);font-weight:700;line-height:1.5}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;border:none;color:#fff;cursor:pointer;font-family:inherit;
+  font-size:.95rem;font-weight:600;padding:14px;border-radius:18px;background:linear-gradient(135deg,var(--oa),var(--ob));
+  box-shadow:0 8px 20px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.25);transition:transform .18s,filter .18s;animation:slideIn .45s both}
+.opt:nth-child(2){animation-delay:.06s}.opt:nth-child(3){animation-delay:.12s}.opt:nth-child(4){animation-delay:.18s}
+@keyframes slideIn{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+.opt .l{flex:none;width:34px;height:34px;border-radius:12px;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;font-weight:900}
+.opt:hover:not(:disabled){transform:translateY(-3px) scale(1.02);filter:brightness(1.12)}
+.opt:disabled{cursor:default}
+.opt.o0{--oa:#3b82f6;--ob:#1d4ed8}.opt.o1{--oa:#ec4899;--ob:#be185d}.opt.o2{--oa:#f59e0b;--ob:#b45309}.opt.o3{--oa:#10b981;--ob:#047857}
+.opt.right{--oa:#22c55e;--ob:#15803d;animation:glow .7s ease 2;box-shadow:0 0 0 3px #bbf7d0,0 0 34px #22c55e}
+.opt.wrong{--oa:#ef4444;--ob:#991b1b;animation:shake .5s;box-shadow:0 0 0 3px #fecaca,0 0 26px #ef4444}
+.opt.dim{opacity:.4;filter:grayscale(.6)}
+@keyframes glow{50%{transform:scale(1.04)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+.feedback{text-align:center;min-height:34px;margin-top:14px;font-weight:800;font-size:1.1rem}
+.feedback.ok{color:#86efac}.feedback.no{color:#fca5a5}
+.flash{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0}
+.flash.ok{background:radial-gradient(circle,rgba(34,197,94,.45),transparent 70%);animation:fl .6s}
+.flash.no{background:radial-gradient(circle,rgba(239,68,68,.5),transparent 70%);animation:fl .6s}
+@keyframes fl{0%{opacity:1}100%{opacity:0}}
+.result{text-align:center;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:28px 18px;
+  backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.4)}
+.trophy{font-size:4.5rem;animation:bob 2.2s ease-in-out infinite;filter:drop-shadow(0 8px 14px rgba(0,0,0,.4))}
+.result h2{font-size:1.9rem;margin:6px 0}
+.starsrow{font-size:2.2rem;letter-spacing:6px;margin:6px 0 14px}
+.rstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:18px 0}
+.rs{padding:14px;border-radius:16px;background:rgba(0,0,0,.25);border:1px solid var(--line)}
+.rs b{display:block;font-size:1.7rem}
+.rs small{color:var(--muted)}
+.btn{border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:1rem;color:#fff;padding:14px 26px;border-radius:16px;margin:6px;
+  background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 10px 24px rgba(0,0,0,.35);transition:.2s}
+.btn:hover{transform:translateY(-3px) scale(1.04)}
+.btn.alt{background:rgba(255,255,255,.14);border:1px solid var(--line)}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:60}
+@media(max-width:640px){.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<div class="stars" id="stars"></div>
+<div class="flash" id="flash"></div>
+<canvas id="fx"></canvas>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo">🏆 KUIS PELAJAR JUARA</div>
+    <div class="iconbtns">
+      <button class="ibtn" id="btnMusic" title="Musik">🎵</button>
+      <button class="ibtn" id="btnSfx" title="Efek suara">🔊</button>
+    </div>
+  </div>
+
+  <section class="screen active" id="sMenu">
+    <div class="hero">
+      <h1>Pilih Mata Pelajaranmu!</h1>
+      <p>25 soal per pelajaran &bull; 30 detik per soal &bull; Soal baru tiap main lagi</p>
+      <div class="badges">
+        <span class="badge">⏱️ 30 detik / soal</span>
+        <span class="badge">⚡ Jawab cepat = poin besar</span>
+        <span class="badge">🔥 Combo beruntun</span>
+        <span class="badge">📝 25 soal / mapel</span>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p class="footer-note">Tips: tekan tombol 1–4 atau A–D di keyboard untuk menjawab lebih cepat.</p>
+  </section>
+
+  <section class="screen" id="sQuiz">
+    <div class="qhead">
+      <button class="btn-back" id="btnBack">⬅️ Kembali</button>
+      <span class="chip subjchip" id="qSubj"></span>
+      <span class="chip timer-chip" id="qTimer">⏱️ 30s</span>
+      <span class="spacer"></span>
+      <span class="chip" id="qScore">⭐ 0</span>
+      <span class="chip tally-ok" id="qRight">✅ 0</span>
+      <span class="chip tally-no" id="qWrong">❌ 0</span>
+      <span class="chip" id="qCombo">🔥 x0</span>
+    </div>
+    <div class="progress"><div id="bar"></div></div>
+    <div class="qcard">
+      <div class="qno" id="qno">Soal 1 / 25</div>
+      <div class="qtext" id="qtext"></div>
+    </div>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="fb"></div>
+  </section>
+
+  <section class="screen" id="sResult">
+    <div class="result">
+      <div class="trophy" id="rTrophy">🏆</div>
+      <h2 id="rTitle">Hasil</h2>
+      <div class="starsrow" id="rStars"></div>
+      <div class="rstats">
+        <div class="rs"><b id="rScore">0</b><small>Skor</small></div>
+        <div class="rs"><b id="rRight" style="color:#86efac">0</b><small>Benar</small></div>
+        <div class="rs"><b id="rWrong" style="color:#fca5a5">0</b><small>Salah</small></div>
+        <div class="rs"><b id="rTimeout" style="color:#fcd34d">0</b><small>Waktu Habis</small></div>
+        <div class="rs"><b id="rBest" style="color:#93c5fd">0</b><small>Rekor</small></div>
+      </div>
+      <p id="rMsg" style="color:var(--muted);margin-bottom:10px"></p>
+      <button class="btn" id="btnAgain">🔄 Main Lagi</button>
+      <button class="btn" id="btnMenu" style="background:rgba(255,255,255,.14);border:1px solid var(--line)">📚 Pilih Pelajaran</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =========================================================
+   BANK SOAL — 11 MAPEL × 25 SOAL
+   Format: [pertanyaan, JAWABAN BENAR, salah1, salah2, salah3]
+   ========================================================= */
+const BANK = {
+ppkn:[
+["Pancasila merupakan dasar negara Indonesia yang terdiri dari lima sila dan menjadi pedoman hidup berbangsa. Sila yang menempati urutan pertama dan menekankan hubungan manusia dengan Tuhan Yang Maha Esa berbunyi...","Ketuhanan Yang Maha Esa","Kemanusiaan yang adil dan beradab","Persatuan Indonesia","Keadilan sosial bagi seluruh rakyat Indonesia"],
+["Pada perisai burung Garuda Pancasila terdapat lima lambang yang mewakili kelima sila. Lambang yang mewakili sila ketiga 'Persatuan Indonesia' adalah...","Pohon beringin","Rantai","Kepala banteng","Padi dan kapas"],
+["Undang-Undang Dasar 1945 adalah konstitusi tertulis pertama Indonesia yang disahkan oleh PPKI setelah proklamasi kemerdekaan. UUD 1945 resmi disahkan pada tanggal...","18 Agustus 1945","17 Agustus 1945","1 Juni 1945","22 Juni 1945"],
+["Sebagai negara yang beragam suku, budaya, dan agama, Indonesia memiliki semboyan yang tertulis pada pita yang dicengkeram kaki burung Garuda. Semboyan negara Indonesia adalah...","Bhinneka Tunggal Ika","Tut Wuri Handayani","Merdeka atau Mati","Garuda Pancasila"],
+["Pembukaan UUD 1945 terdiri atas empat alinea yang masing-masing memiliki makna penting. Tujuan negara Indonesia untuk melindungi segenap bangsa tercantum dalam alinea ke...","4","1","2","3"],
+["Dalam sistem ketatanegaraan Indonesia, kekuasaan negara dibagi menjadi eksekutif, legislatif, dan yudikatif. Lembaga yang memegang kekuasaan legislatif untuk membentuk undang-undang adalah...","DPR","Mahkamah Agung","Presiden","BPK"],
+["Kekuasaan yudikatif di Indonesia dijalankan oleh lembaga peradilan yang bertugas menegakkan hukum dan keadilan. Lembaga pemegang kekuasaan yudikatif tertinggi adalah...","Mahkamah Agung","DPR","BPK","Presiden"],
+["Pemilihan umum di Indonesia merupakan sarana kedaulatan rakyat untuk memilih wakil rakyat dan pemimpin negara. Pemilu di Indonesia dilaksanakan setiap... tahun sekali.","5","4","3","6"],
+["Asas pemilu di Indonesia dikenal dengan singkatan LUBER yang berarti Langsung, Umum, Bebas, dan Rahasia. Huruf 'L' pada asas pemilu tersebut memiliki arti...","Langsung","Lokal","Lancar","Luas"],
+["Setiap warga negara memiliki hak dan kewajiban yang harus dijalankan secara seimbang dalam kehidupan bermasyarakat. Sesuatu yang wajib dilakukan oleh setiap warga negara disebut...","Kewajiban","Hak","Wewenang","Kebebasan"],
+["Peristiwa Sumpah Pemuda merupakan tonggak penting dalam sejarah pergerakan nasional Indonesia. Ikrar Sumpah Pemuda dibacakan pada tanggal...","28 Oktober 1928","20 Mei 1908","17 Agustus 1945","1 Juni 1945"],
+["Pancasila sebagai dasar negara lahir melalui proses panjang sidang BPUPKI. Hari lahir Pancasila diperingati setiap tanggal...","1 Juni","17 Agustus","18 Agustus","28 Oktober"],
+["Kebebasan setiap warga negara untuk memeluk dan menjalankan ibadah sesuai agamanya dijamin dalam UUD 1945 Pasal...","29","27","30","33"],
+["Sejak era reformasi, Presiden Indonesia dipilih langsung oleh rakyat melalui pemilu. Presiden Indonesia dipilih langsung oleh rakyat sejak tahun...","2004","1999","1945","2009"],
+["Negara Indonesia dibentuk sebagai satu kesatuan yang tidak terpisahkan dari Sabang sampai Merauke. Bentuk negara Indonesia adalah...","Kesatuan","Federal","Serikat","Persemakmuran"],
+["Sistem pemerintahan Indonesia menempatkan presiden sebagai kepala negara sekaligus kepala pemerintahan. Sistem pemerintahan Indonesia adalah...","Presidensial","Parlementer","Monarki absolut","Junta militer"],
+["Gotong royong merupakan nilai luhur bangsa Indonesia yang tercermin dalam kehidupan bermasyarakat. Contoh sikap gotong royong yang benar adalah...","Kerja bakti membersihkan lingkungan","Mementingkan diri sendiri","Menyontek saat ujian","Membuang sampah sembarangan"],
+["Sila kelima Pancasila menekankan pentingnya keadilan dalam kehidupan bermasyarakat. Sila kelima Pancasila berbunyi...","Keadilan sosial bagi seluruh rakyat Indonesia","Persatuan Indonesia","Ketuhanan Yang Maha Esa","Kemanusiaan yang adil dan beradab"],
+["Lambang negara Indonesia yang berbentuk burung dengan perisai di dadanya disebut...","Garuda Pancasila","Burung Cendrawasih","Elang Jawa","Rajawali Merah"],
+["Pada lambang Garuda Pancasila, jumlah bulu pada sayap burung melambangkan tanggal kemerdekaan. Jumlah bulu pada sayap burung Garuda adalah...","17","8","45","19"],
+["Lembaga negara yang bertugas memeriksa pengelolaan dan tanggung jawab keuangan negara adalah...","BPK","KPK","OJK","Bank Indonesia"],
+["Mahkamah Konstitusi memiliki kewenangan khusus dalam sistem ketatanegaraan Indonesia. Mahkamah Konstitusi berwenang untuk...","Menguji undang-undang terhadap UUD","Membuat undang-undang","Memilih presiden","Mengadili kasus pencurian"],
+["Toleransi antarumat beragama merupakan sikap yang sangat penting dalam kehidupan berbangsa. Toleransi adalah sikap...","Menghargai perbedaan","Memaksakan kehendak","Menolak perbedaan","Menjauhi orang yang berbeda"],
+["Nilai-nilai Pancasila diamalkan dalam kehidupan sehari-hari, termasuk dalam pengambilan keputusan bersama. Musyawarah untuk mufakat diamalkan dalam sila ke...","4","1","3","5"],
+["Hak setiap warga negara untuk memperoleh pendidikan telah dijamin dalam konstitusi. Hak warga negara mendapat pengajaran diatur dalam UUD 1945 Pasal...","31","30","33","34"]
+],
+sejarah:[
+["Proklamasi kemerdekaan Indonesia merupakan puncak perjuangan bangsa melawan penjajahan. Teks Proklamasi dibacakan oleh Soekarno pada tanggal...","17 Agustus 1945","18 Agustus 1945","1 Juni 1945","28 Oktober 1928"],
+["Setelah dirumuskan di rumah Laksamana Maeda, naskah proklamasi kemudian diketik. Teks proklamasi tersebut diketik oleh...","Sayuti Melik","Fatmawati","Ahmad Subardjo","Sukarni"],
+["Bendera pusaka yang dikibarkan saat proklamasi 17 Agustus 1945 dijahit sendiri oleh...","Fatmawati","Cut Nyak Dhien","R.A. Kartini","Dewi Sartika"],
+["Kerajaan bercorak Hindu tertua di Indonesia yang terletak di Kalimantan Timur adalah...","Kutai","Majapahit","Sriwijaya","Mataram Kuno"],
+["Kerajaan Kutai mencapai puncak kejayaan pada masa pemerintahan raja yang terkenal, yaitu...","Mulawarman","Hayam Wuruk","Balaputradewa","Airlangga"],
+["Kerajaan Sriwijaya dikenal sebagai kerajaan maritim yang sangat kuat di Nusantara. Pusat Kerajaan Sriwijaya berada di dekat kota...","Palembang","Yogyakarta","Banten","Makassar"],
+["Sumpah Palapa merupakan ikrar yang diucapkan oleh mahapatih terkenal dari Majapahit. Mahapatih Majapahit yang terkenal dengan Sumpah Palapa adalah...","Gajah Mada","Mpu Prapanca","Ken Arok","Jayabaya"],
+["Candi Borobudur merupakan peninggalan bercorak Buddha terbesar di dunia. Candi Borobudur dibangun oleh Dinasti...","Syailendra","Sanjaya","Isyana","Warmadewa"],
+["Bangsa Eropa yang pertama kali berhasil menguasai kota pelabuhan Malaka adalah...","Portugis","Belanda","Inggris","Spanyol"],
+["VOC merupakan kongsi dagang Belanda yang memiliki hak istimewa di Nusantara. VOC didirikan pada tahun...","1602","1511","1799","1830"],
+["Sistem Tanam Paksa yang sangat memberatkan rakyat Nusantara dicetuskan oleh...","Johannes van den Bosch","Daendels","Raffles","Cornelis de Houtman"],
+["Perang Diponegoro merupakan salah satu perlawanan besar rakyat Jawa terhadap Belanda. Perang Diponegoro terjadi pada tahun...","1825–1830","1811–1815","1945–1949","1908–1912"],
+["Perang Padri di Sumatera Barat dipimpin oleh tokoh ulama yang gigih melawan Belanda. Pahlawan pemimpin Perang Padri adalah...","Tuanku Imam Bonjol","Pangeran Antasari","Pattimura","Sultan Hasanuddin"],
+["Pangeran Antasari adalah pahlawan yang gigih memimpin perlawanan rakyat terhadap Belanda. Pangeran Antasari berjuang di...","Kalimantan Selatan","Aceh","Maluku","Sulawesi Selatan"],
+["Hari Kebangkitan Nasional diperingati untuk mengenang lahirnya organisasi Budi Utomo. Hari Kebangkitan Nasional diperingati setiap tanggal...","20 Mei","2 Mei","28 Oktober","10 November"],
+["Budi Utomo merupakan organisasi modern pertama yang menjadi awal pergerakan nasional. Organisasi Budi Utomo didirikan pada tahun...","1908","1928","1912","1945"],
+["Tiga Serangkai merupakan tokoh pendiri Indische Partij yang memperjuangkan kemerdekaan. Ketiga tokoh tersebut adalah Douwes Dekker, Cipto Mangunkusumo, dan...","Ki Hajar Dewantara","H.O.S. Cokroaminoto","Soetomo","Mohammad Hatta"],
+["Masa pendudukan Jepang di Indonesia berlangsung singkat namun penuh penderitaan. Indonesia dijajah Jepang pada tahun...","1942–1945","1602–1799","1945–1949","1908–1928"],
+["Peristiwa bom atom yang memaksa Jepang menyerah kepada Sekutu terjadi di dua kota. Jepang menyerah kepada Sekutu setelah dijatuhkannya bom atom di...","Hiroshima dan Nagasaki","Tokyo dan Osaka","Kyoto dan Nara","Okinawa dan Sapporo"],
+["Peristiwa Rengasdengklok merupakan bagian penting dalam persiapan proklamasi kemerdekaan. Peristiwa Rengasdengklok terjadi karena golongan muda...","Membawa Soekarno-Hatta ke Rengasdengklok","Menyerang tentara Jepang","Menyusun UUD","Membentuk PPKI"],
+["Hari Pahlawan diperingati untuk mengenang peristiwa heroik rakyat Indonesia dalam mempertahankan kemerdekaan. Hari Pahlawan diperingati untuk mengenang pertempuran di...","Surabaya","Bandung","Semarang","Ambarawa"],
+["Peringatan Hari Pahlawan setiap tahun menjadi momen untuk menghormati jasa para pahlawan bangsa. Hari Pahlawan jatuh pada tanggal...","10 November","10 Desember","17 Agustus","20 Mei"],
+["Peristiwa Bandung Lautan Api merupakan bentuk perlawanan rakyat terhadap tentara Sekutu. Peristiwa 'Bandung Lautan Api' terjadi pada tahun...","1946","1945","1948","1950"],
+["Belanda akhirnya mengakui kedaulatan Indonesia setelah melalui perundingan panjang. Belanda mengakui kedaulatan Indonesia pada hasil...","Konferensi Meja Bundar","Perjanjian Renville","Perjanjian Roem-Royen","Perjanjian Giyanti"],
+["Presiden pertama Republik Indonesia yang memproklamasikan kemerdekaan adalah...","Soekarno","Soeharto","B.J. Habibie","Abdurrahman Wahid"]
+],
+bindo:[
+["Dalam berbahasa Indonesia, kita mengenal istilah sinonim yaitu kata yang memiliki makna sama. Sinonim dari kata 'cantik' adalah...","Elok","Buruk","Jelek","Lusuh"],
+["Antonim adalah kata yang memiliki makna berlawanan dengan kata lainnya. Antonim dari kata 'rajin' adalah...","Malas","Tekun","Giat","Ulet"],
+["Bahasa Indonesia memiliki aturan penulisan kata baku sesuai KBBI. Kata baku yang benar di antara pilihan berikut adalah...","Apotek","Apotik","Apotheek","Apoteck"],
+["Dalam penulisan karya ilmiah, kita diharuskan menggunakan kata baku sesuai KBBI. Kata baku yang benar adalah...","Analisis","Analisa","Analysis","Analisys"],
+["Banyak kata serapan yang sering salah ditulis dalam kehidupan sehari-hari. Kata baku yang benar adalah...","Risiko","Resiko","Risco","Resico"],
+["Majas adalah gaya bahasa yang digunakan untuk memperindah kalimat. Majas yang membandingkan sesuatu dengan kata 'seperti' atau 'bagai' disebut...","Simile","Metafora","Hiperbola","Ironi"],
+["Perhatikan kalimat berikut: 'Angin berbisik di telingaku.' Kalimat tersebut termasuk majas...","Personifikasi","Hiperbola","Metonimia","Litotes"],
+["Perhatikan kalimat berikut: 'Aku sudah menunggumu seribu tahun.' Kalimat tersebut termasuk majas...","Hiperbola","Personifikasi","Simile","Ironi"],
+["Setiap jenis kalimat memiliki tanda baca yang berbeda di akhir kalimat. Tanda baca di akhir kalimat tanya adalah...","Tanda tanya (?)","Tanda titik (.)","Tanda seru (!)","Tanda koma (,)"],
+["Penulisan kata depan 'di' harus dipisah dari kata yang mengikutinya jika menunjukkan tempat. Penulisan kata depan 'di' yang tepat terdapat pada kalimat...","Adik duduk di kursi.","Adik duduk dikursi.","Buku itu di baca Ani.","Pintu itu di buka Ibu."],
+["Dalam sebuah kalimat, terdapat unsur-unsur yang membentuk struktur kalimat. Bagian kalimat yang menyatakan pelaku disebut...","Subjek","Predikat","Objek","Keterangan"],
+["Pantun merupakan salah satu karya sastra lama Indonesia yang masih populer hingga kini. Pantun terdiri atas... baris dalam satu bait.","4","2","6","8"],
+["Pada pantun, dua baris pertama memiliki fungsi tersendiri sebelum masuk ke isi. Dua baris pertama pada pantun disebut...","Sampiran","Isi","Tema","Amanat"],
+["Chairil Anwar merupakan penyair terkenal Indonesia yang karyanya banyak dikagumi. Penulis puisi terkenal 'Aku' adalah...","Chairil Anwar","W.S. Rendra","Sapardi Djoko Damono","Taufiq Ismail"],
+["Novel 'Laskar Pelangi' menceritakan tentang perjuangan anak-anak Belitung dalam menempuh pendidikan. Novel 'Laskar Pelangi' ditulis oleh...","Andrea Hirata","Tere Liye","Habiburrahman El Shirazy","Pramoedya Ananta Toer"],
+["Novel 'Siti Nurbaya' merupakan karya sastra klasik yang mengisahkan tentang perjodohan. Novel 'Siti Nurbaya' dikarang oleh...","Marah Rusli","Hamka","Armijn Pane","Abdul Muis"],
+["Teks yang berisi langkah-langkah atau urutan cara melakukan sesuatu disebut teks prosedur. Teks yang berisi langkah-langkah melakukan sesuatu disebut teks...","Prosedur","Narasi","Deskripsi","Eksposisi"],
+["Teks narasi adalah teks yang menceritakan rangkaian peristiwa secara kronologis. Teks yang menceritakan rangkaian peristiwa disebut teks...","Narasi","Prosedur","Persuasi","Laporan"],
+["Dalam menulis berita, kita mengenal rumus 5W+1H untuk memenuhi unsur berita. Unsur 'Why' dalam 5W+1H berarti...","Mengapa","Siapa","Di mana","Kapan"],
+["Rumus 5W+1H digunakan untuk membuat pertanyaan yang lengkap dalam wawancara. Unsur 'Who' dalam 5W+1H menanyakan...","Siapa","Apa","Kapan","Bagaimana"],
+["Kata dasar dapat berubah bentuk ketika mendapat awalan tertentu. Kata dasar 'tulis' diberi awalan me- menjadi...","Menulis","Mentulis","Menullis","Memtulis"],
+["Kata ulang dalam bahasa Indonesia memiliki beberapa jenis, salah satunya kata ulang berubah bunyi. Kata 'sayur-mayur' termasuk kata ulang yang...","Berubah bunyi","Utuh","Berimbuhan","Semu"],
+["Peribahasa sering digunakan untuk menyampaikan nasihat secara tidak langsung. Peribahasa 'air beriak tanda tak dalam' bermakna...","Orang yang banyak bicara biasanya kurang berilmu","Orang pandai selalu diam","Air sungai dangkal","Orang yang kaya raya"],
+["Ungkapan atau idiom memiliki makna kias yang tidak sebenarnya. Ungkapan 'panjang tangan' berarti...","Suka mencuri","Rajin bekerja","Dermawan","Pemarah"],
+["Dalam percakapan sehari-hari, kita sering menggunakan ungkapan kiasan. Ungkapan 'besar kepala' berarti...","Sombong","Pintar","Sakit kepala","Rendah hati"]
+],
+bing:[
+["The verb 'to be' in English changes depending on the subject used in the sentence. I ___ a student.","am","is","are","be"],
+["Simple present tense uses the verb with -s or -es for third person singular. She ___ to school every day.","goes","go","going","gone"],
+["Irregular verbs in English change form in the past tense and past participle. The past form of 'go' is...","went","goed","gone","going"],
+["Some nouns in English have irregular plural forms that do not follow the -s rule. The plural of 'child' is...","children","childs","childes","childrens"],
+["When we talk about antonyms, we mean words that have opposite meanings. The opposite of 'hot' is...","cold","warm","cool","fire"],
+["Present continuous tense describes actions happening right now. They ___ playing football now.","are","is","am","was"],
+["Some English words have equivalent meanings in Indonesian that students should know. 'Library' in Indonesian means...","Perpustakaan","Laboratorium","Kantin","Lapangan"],
+["Building vocabulary is important for learning a new language effectively. The English word for 'kucing' is...","cat","dog","rat","bird"],
+["Simple past tense is used to describe actions that happened in the past. He ___ a new bike yesterday.","bought","buy","buys","buying"],
+["The past participle form of a verb is used in perfect tenses. The past participle of 'eat' is...","eaten","ate","eating","eats"],
+["Present perfect tense connects past actions to the present situation. I have ___ my homework.","finished","finish","finishing","finishes"],
+["Articles in English can be definite or indefinite depending on the context. She is ___ honest girl.","an","a","the","two"],
+["Auxiliary verbs help form questions and negative sentences in English. ___ you like tea?","Do","Does","Is","Are"],
+["Prepositions of time are used to describe when something happens. I was born ___ 2010.","in","on","at","by"],
+["Dates in English usually take the preposition 'on' before the exact day. My birthday is ___ May 5th.","on","in","at","for"],
+["Telling the time in English uses the preposition 'at' for exact clock times. We meet ___ 7 o'clock.","at","in","on","by"],
+["Understanding adjectives and their opposites helps build vocabulary. The opposite of 'big' is...","small","tall","long","wide"],
+["Family vocabulary is essential when talking about relatives in English. Your mother's brother is your...","uncle","aunt","cousin","grandfather"],
+["Some adjectives have irregular comparative and superlative forms. The comparative form of 'good' is...","better","gooder","best","more good"],
+["Superlative adjectives describe the highest degree among three or more items. The superlative form of 'big' is...","biggest","bigger","most big","bigest"],
+["Learning the days of the week is basic vocabulary in English. After Monday comes...","Tuesday","Sunday","Wednesday","Friday"],
+["Time-related vocabulary includes days, months, and other expressions. There are ___ days in a week.","seven","five","six","eight"],
+["Subject pronouns are used to replace nouns in a sentence. Tina is my friend. ___ is very kind.","She","He","It","They"],
+["Possessive adjectives show ownership in English sentences. This is Tom's book. It is ___ book.","his","her","their","its"],
+["Numbers in English have specific spellings that students must memorize. Which one is the number 40?","forty","fourteen","fourty","four"]
+],
+islam:[
+["Dalam ajaran Islam, rukun Islam merupakan lima pilar utama yang harus diyakini dan diamalkan setiap muslim. Jumlah rukun Islam ada...","5","4","6","7"],
+["Rukun Iman merupakan enam pokok keyakinan yang harus diyakini umat Islam. Jumlah rukun Iman ada...","6","5","4","7"],
+["Rukun Islam yang pertama menjadi dasar keislaman seseorang. Rukun Islam yang pertama adalah...","Syahadat","Salat","Puasa","Zakat"],
+["Kitab suci yang diturunkan kepada Nabi Muhammad SAW sebagai pedoman umat Islam adalah...","Al-Qur'an","Zabur","Taurat","Injil"],
+["Al-Qur'an merupakan kitab suci terakhir yang diturunkan kepada Nabi Muhammad SAW. Jumlah surah dalam Al-Qur'an adalah...","114","110","30","99"],
+["Surah pertama dalam Al-Qur'an yang selalu dibaca dalam salat adalah...","Al-Fatihah","Al-Baqarah","Al-Ikhlas","An-Nas"],
+["Al-Qur'an memiliki surah-surah dengan jumlah ayat yang berbeda-beda. Surah terpendek dalam Al-Qur'an adalah...","Al-Kautsar","Al-Fatihah","Al-Ikhlas","Al-Falaq"],
+["Nabi Muhammad SAW merupakan nabi dan rasul yang terakhir diutus oleh Allah. Nabi terakhir adalah...","Muhammad SAW","Isa AS","Musa AS","Ibrahim AS"],
+["Wahyu pertama yang diterima Nabi Muhammad SAW di Gua Hira adalah surah...","Al-'Alaq","Al-Fatihah","Al-Muddatstsir","Al-Ikhlas"],
+["Malaikat adalah makhluk Allah yang diciptakan dari cahaya dan selalu taat. Malaikat penyampai wahyu adalah...","Jibril","Mikail","Israfil","Izrail"],
+["Setiap malaikat memiliki tugas yang berbeda-beda sesuai perintah Allah. Malaikat pencabut nyawa adalah...","Izrail","Jibril","Mikail","Malik"],
+["Malaikat Mikail memiliki tugas khusus yang berkaitan dengan kehidupan manusia. Malaikat pembagi rezeki adalah...","Mikail","Jibril","Israfil","Ridwan"],
+["Malaikat Israfil memiliki tugas khusus pada hari kiamat. Malaikat peniup sangkakala adalah...","Israfil","Jibril","Mikail","Izrail"],
+["Salat Subuh dilaksanakan pada waktu fajar sebelum matahari terbit. Jumlah rakaat salat Subuh adalah...","2","3","4","5"],
+["Salat Maghrib dilaksanakan setelah matahari terbenam. Jumlah rakaat salat Maghrib adalah...","3","2","4","5"],
+["Salat Isya dilaksanakan pada malam hari setelah waktu maghrib berakhir. Jumlah rakaat salat Isya adalah...","4","2","3","5"],
+["Puasa Ramadan merupakan salah satu rukun Islam yang wajib dilaksanakan. Puasa wajib dilaksanakan pada bulan...","Ramadan","Syawal","Muharram","Rajab"],
+["Kalender Hijriah digunakan sebagai pedoman ibadah umat Islam. Ramadan adalah bulan ke-... dalam kalender Hijriah.","9","8","10","12"],
+["Ibadah haji merupakan rukun Islam kelima yang wajib dilaksanakan bagi yang mampu. Haji dilaksanakan di kota...","Mekah","Madinah","Kairo","Yerusalem"],
+["Hari Raya Idul Fitri merupakan hari kemenangan setelah sebulan berpuasa. Hari Raya Idul Fitri jatuh pada tanggal...","1 Syawal","10 Dzulhijjah","1 Muharram","12 Rabiul Awal"],
+["Hari Raya Idul Adha berkaitan dengan peristiwa kurban Nabi Ibrahim. Hari Raya Idul Adha jatuh pada tanggal...","10 Dzulhijjah","1 Syawal","1 Ramadan","27 Rajab"],
+["Peristiwa kurban bermula dari kisah pengorbanan seorang nabi kepada Allah. Kisah penyembelihan hewan kurban berkaitan dengan Nabi...","Ibrahim AS","Nuh AS","Yusuf AS","Yunus AS"],
+["Setiap nabi menerima kitab suci yang berbeda sebagai pedoman umatnya. Nabi yang menerima kitab Taurat adalah...","Musa AS","Daud AS","Isa AS","Muhammad SAW"],
+["Kitab Zabur diturunkan kepada seorang nabi yang juga dikenal sebagai raja yang bijaksana. Nabi yang menerima kitab Zabur adalah...","Daud AS","Musa AS","Isa AS","Sulaiman AS"],
+["Kitab Injil diturunkan kepada Nabi Isa AS sebagai pedoman bagi kaumnya. Nabi yang menerima kitab Injil adalah...","Isa AS","Musa AS","Daud AS","Yahya AS"]
+],
+kristen:[
+["Umat Kristen menggunakan kitab suci sebagai pedoman hidup dan iman. Kitab suci umat Kristen adalah...","Alkitab","Al-Qur'an","Weda","Tripitaka"],
+["Alkitab memiliki dua bagian utama yang masing-masing memiliki makna penting. Alkitab terdiri atas dua bagian, yaitu...","Perjanjian Lama dan Perjanjian Baru","Taurat dan Zabur","Injil dan Weda","Kejadian dan Wahyu"],
+["Alkitab terdiri dari banyak kitab yang ditulis oleh para penulis yang diilhami Allah. Jumlah seluruh kitab dalam Alkitab adalah...","66","39","27","72"],
+["Perjanjian Baru berisi kisah kehidupan Yesus dan perkembangan gereja mula-mula. Jumlah kitab dalam Perjanjian Baru adalah...","27","39","66","12"],
+["Alkitab diawali dengan kitab yang menceritakan tentang penciptaan alam semesta. Kitab pertama dalam Alkitab adalah...","Kejadian","Keluaran","Matius","Mazmur"],
+["Alkitab diakhiri dengan kitab yang berisi penglihatan tentang akhir zaman. Kitab terakhir dalam Alkitab adalah...","Wahyu","Yudas","Maleakhi","Yohanes"],
+["Kisah penciptaan alam semesta tercatat dalam kitab Kejadian. Allah menciptakan dunia dalam... hari.","6","7","3","10"],
+["Manusia pertama diciptakan oleh Allah dan ditempatkan di Taman Eden. Manusia pertama yang diciptakan Allah adalah...","Adam dan Hawa","Kain dan Habel","Nuh dan Sem","Abraham dan Sara"],
+["Kisah pembunuhan pertama dalam Alkitab melibatkan dua bersaudara. Kain membunuh adiknya yang bernama...","Habel","Set","Henokh","Lamekh"],
+["Kisah air bah merupakan salah satu kisah terkenal dalam Perjanjian Lama. Tokoh yang membuat bahtera menjelang air bah adalah...","Nuh","Abraham","Musa","Yosua"],
+["Abraham dikenal sebagai tokoh yang sangat beriman kepada Allah dalam Alkitab. Bapa orang beriman adalah...","Abraham","Musa","Daud","Elia"],
+["Sepuluh Hukum merupakan perintah Allah yang diterima Musa di gunung suci. Sepuluh Hukum diterima Musa di gunung...","Sinai","Karmel","Zaitun","Nebo"],
+["Kisah Daud dan Goliat mengajarkan tentang keberanian dan iman kepada Tuhan. Daud mengalahkan raksasa bernama...","Goliat","Simson","Saul","Absalom"],
+["Salomo dikenal sebagai raja yang sangat bijaksana dalam Alkitab. Raja yang terkenal dengan hikmatnya adalah...","Salomo","Saul","Daud","Hizkia"],
+["Kisah Daniel mengajarkan tentang kesetiaan kepada Allah dalam situasi sulit. Daniel dilemparkan ke dalam...","Gua singa","Perapian menyala","Sumur kering","Penjara bawah tanah"],
+["Yunus awalnya menolak perintah Tuhan namun akhirnya bertobat. Nabi yang ditelan ikan besar adalah...","Yunus","Yeremia","Yesaya","Elia"],
+["Kelahiran Yesus Kristus merupakan peristiwa penting bagi umat Kristen. Yesus Kristus dilahirkan di kota...","Betlehem","Nazaret","Yerusalem","Kapernaum"],
+["Maria adalah wanita yang dipilih Allah untuk mengandung Yesus. Ibu Yesus bernama...","Maria","Marta","Elisabet","Hana"],
+["Hari Natal memperingati kelahiran Yesus Kristus ke dunia. Hari Natal diperingati setiap tanggal...","25 Desember","1 Januari","6 Januari","24 Desember"],
+["Hari Paskah memperingati kebangkitan Yesus Kristus dari kematian. Hari kebangkitan Yesus diperingati sebagai hari...","Paskah","Natal","Pentakosta","Jumat Agung"],
+["Jumat Agung merupakan hari yang penuh dukacita bagi umat Kristen. Hari wafatnya Yesus di kayu salib diperingati sebagai...","Jumat Agung","Paskah","Natal","Kenaikan"],
+["Yesus memilih dua belas orang untuk mengikutinya selama pelayanan di dunia. Jumlah murid Yesus adalah...","12","7","10","70"],
+["Salah satu murid Yesus mengkhianati-Nya dengan menyerahkan kepada musuh. Murid yang mengkhianati Yesus adalah...","Yudas Iskariot","Petrus","Yohanes","Tomas"],
+["Petrus merupakan salah satu murid yang paling menonjol dalam Injil. Murid Yesus yang menyangkal-Nya tiga kali adalah...","Petrus","Andreas","Matius","Filipus"],
+["Yesus mengajarkan sebuah doa sebagai contoh berdoa bagi murid-murid-Nya. Doa yang diajarkan Yesus kepada murid-murid-Nya adalah...","Doa Bapa Kami","Doa Syukur","Doa Pengakuan","Doa Berkat"]
+],
+pjok:[
+["Sepak bola merupakan olahraga paling populer di dunia yang dimainkan oleh dua tim. Jumlah pemain sepak bola dalam satu tim di lapangan adalah...","11","9","7","12"],
+["Bola basket dimainkan oleh dua tim yang saling berusaha memasukkan bola ke ring lawan. Jumlah pemain bola basket dalam satu tim di lapangan adalah...","5","6","7","11"],
+["Bola voli merupakan olahraga yang dimainkan oleh dua tim di lapangan berjaring. Jumlah pemain bola voli dalam satu tim di lapangan adalah...","6","5","7","9"],
+["Bulu tangkis merupakan olahraga raket yang sangat populer di Indonesia. Alat yang digunakan untuk memukul kok pada bulu tangkis adalah...","Raket","Pemukul","Stik","Bet kayu"],
+["Bulu tangkis menggunakan sistem poin rally point dalam setiap pertandingan. Satu set bulu tangkis dimenangkan jika mencapai poin...","21","11","15","25"],
+["Lari jarak pendek mengutamakan kecepatan maksimal dalam waktu singkat. Lari jarak pendek disebut juga...","Sprint","Maraton","Estafet","Lari rintangan"],
+["Atletik memiliki berbagai nomor perlombaan yang diperlombakan di tingkat dunia. Tolak peluru, lempar cakram, dan lempar lembing termasuk nomor...","Lempar","Lari","Lompat","Jalan cepat"],
+["Lompat jauh merupakan cabang atletik yang mengutamakan kekuatan dan teknik. Pada lompat jauh, atlet bertumpu pada...","Papan tumpu","Matras","Palang","Bak pasir"],
+["Senam lantai dilakukan di atas matras dengan gerakan yang beragam. Gerakan guling ke depan banyak dilakukan pada senam...","Lantai","Irama","Aerobik","Ritmik"],
+["Renang memiliki beberapa gaya yang masing-masing memiliki teknik berbeda. Gaya renang yang tangannya bergerak bergantian dan kaki naik-turun disebut gaya...","Bebas","Dada","Kupu-kupu","Punggung"],
+["Pemanasan sangat penting sebelum melakukan aktivitas olahraga yang berat. Tujuan utama pemanasan sebelum olahraga adalah...","Mencegah cedera","Menambah lemak","Membuat mengantuk","Menghabiskan tenaga"],
+["Denyut nadi dapat digunakan sebagai indikator kebugaran seseorang. Denyut nadi normal orang dewasa saat istirahat adalah...","60–100 kali/menit","20–30 kali/menit","120–150 kali/menit","200 kali/menit"],
+["Karbohidrat merupakan sumber energi utama yang dibutuhkan tubuh manusia. Zat gizi utama penghasil energi adalah...","Karbohidrat","Air","Vitamin","Garam"],
+["Protein sangat penting untuk pertumbuhan dan perbaikan sel-sel tubuh. Fungsi utama protein bagi tubuh adalah...","Pertumbuhan dan perbaikan sel","Melarutkan lemak","Membuat tulang rapuh","Sumber air"],
+["P3K merupakan pertolongan awal yang harus diberikan sebelum bantuan medis datang. P3K merupakan singkatan dari...","Pertolongan Pertama Pada Kecelakaan","Persiapan Tiga Kali Kerja","Pertolongan Pasien Tak Kunjung","Pengobatan Pertama Penyakit Kronis"],
+["Penanganan cedera ringan dapat menggunakan prinsip RICE yang dikenal secara luas. Pada prinsip RICE, huruf 'I' berarti...","Ice (kompres es)","Injection","Immobile","Insulin"],
+["Pencak silat merupakan warisan budaya bangsa Indonesia yang sangat berharga. Pencak silat adalah seni bela diri asli dari...","Indonesia","Jepang","Korea","Tiongkok"],
+["Lapangan bola voli memiliki ukuran standar yang telah ditentukan secara internasional. Panjang lapangan bola voli adalah...","18 meter","20 meter","15 meter","25 meter"],
+["Tenis meja merupakan olahraga yang dimainkan di atas meja dengan bola kecil. Dalam tenis meja, satu set dimenangkan jika mencapai poin...","11","21","15","7"],
+["Bola voli memiliki beberapa teknik dasar yang harus dikuasai pemain. Teknik passing bawah bola voli menggunakan...","Kedua lengan bawah","Satu telapak tangan","Kepala","Siku"],
+["Bola basket memiliki teknik dasar yang harus dikuasai untuk bermain dengan baik. Memantulkan bola ke lantai pada bola basket disebut...","Dribble","Shooting","Rebound","Block"],
+["Lari estafet merupakan nomor atletik yang dilakukan secara berkelompok. Lari estafet jarak pendek biasanya terdiri atas... pelari.","4","2","3","6"],
+["Pada lari estafet, ada benda khusus yang harus dipindahkan antar pelari. Benda yang diserahkan antar pelari estafet disebut...","Tongkat (baton)","Bola","Pita","Kartu"],
+["Tidur yang cukup sangat penting untuk menjaga kesehatan dan kebugaran tubuh. Waktu tidur ideal untuk remaja adalah...","8–10 jam","3–4 jam","5 jam","12–14 jam"],
+["Rokok mengandung berbagai zat berbahaya yang dapat merusak kesehatan tubuh. Zat berbahaya dalam rokok yang menyebabkan kecanduan adalah...","Nikotin","Kalsium","Vitamin","Glukosa"]
+],
+ipa:[
+["Tata surya kita terdiri dari Matahari sebagai pusat dan planet-planet yang mengelilinginya. Planet terdekat dengan Matahari adalah...","Merkurius","Venus","Bumi","Mars"],
+["Planet-planet dalam tata surya memiliki ukuran yang berbeda-beda. Planet terbesar dalam tata surya adalah...","Jupiter","Saturnus","Neptunus","Bumi"],
+["Air merupakan senyawa kimia yang sangat penting bagi kehidupan di Bumi. Rumus kimia air adalah...","H2O","CO2","O2","NaCl"],
+["Manusia membutuhkan udara untuk bernapas dan menghasilkan energi. Gas yang dihirup manusia untuk bernapas adalah...","Oksigen","Karbon dioksida","Nitrogen","Hidrogen"],
+["Tumbuhan membutuhkan gas tertentu untuk melakukan fotosintesis. Gas yang diserap tumbuhan untuk fotosintesis adalah...","Karbon dioksida","Oksigen","Nitrogen","Helium"],
+["Sistem peredaran darah manusia didukung oleh organ-organ yang bekerja bersama. Organ yang memompa darah ke seluruh tubuh adalah...","Jantung","Paru-paru","Hati","Ginjal"],
+["Rangka manusia tersusun atas banyak tulang yang saling berhubungan. Jumlah tulang manusia dewasa adalah...","206","300","150","100"],
+["Dalam fisika, gaya diukur dengan satuan tertentu sesuai sistem internasional. Satuan gaya dalam SI adalah...","Newton","Joule","Watt","Pascal"],
+["Kecepatan merupakan besaran yang menunjukkan seberapa cepat benda berpindah. Rumus kecepatan adalah...","Jarak dibagi waktu","Waktu dibagi jarak","Jarak dikali waktu","Massa dikali percepatan"],
+["Wujud zat dapat berubah jika terjadi perubahan suhu atau tekanan. Perubahan wujud dari cair menjadi gas disebut...","Menguap","Mencair","Membeku","Menyublim"],
+["Es yang dibiarkan di tempat terbuka akan berubah wujud menjadi air. Perubahan wujud dari padat menjadi cair disebut...","Mencair","Membeku","Mengembun","Menguap"],
+["Tumbuhan hijau mampu membuat makanan sendiri melalui proses fotosintesis. Proses pembuatan makanan pada tumbuhan terjadi di...","Kloroplas","Mitokondria","Inti sel","Vakuola"],
+["Hewan dikelompokkan berdasarkan jenis makanannya menjadi beberapa golongan. Hewan pemakan tumbuhan disebut...","Herbivora","Karnivora","Omnivora","Insektivora"],
+["Rantai makanan menunjukkan perpindahan energi antar makhluk hidup dalam ekosistem. Produsen dalam rantai makanan adalah...","Tumbuhan hijau","Singa","Elang","Jamur"],
+["Seluruh makhluk hidup di Bumi sangat bergantung pada sumber energi utama. Sumber energi utama bagi Bumi adalah...","Matahari","Bulan","Bintang Polaris","Gunung berapi"],
+["Suhu merupakan besaran yang menyatakan derajat panas suatu benda. Titik didih air pada tekanan normal adalah...","100°C","0°C","50°C","212°C"],
+["Setiap unsur kimia memiliki lambang yang telah disepakati secara internasional. Lambang unsur emas adalah...","Au","Ag","Fe","Cu"],
+["Lambang unsur besi banyak dijumpai dalam tabel periodik unsur. Lambang unsur besi adalah...","Fe","Be","Br","Fr"],
+["Suhu tubuh dan suhu benda dapat diukur menggunakan alat khusus. Alat untuk mengukur suhu adalah...","Termometer","Barometer","Amperemeter","Higrometer"],
+["Pelangi merupakan fenomena alam yang indah dan sering kita jumpai setelah hujan. Peristiwa terbentuknya pelangi disebut...","Dispersi cahaya","Pemantulan","Difraksi","Polarisasi"],
+["Bunyi merupakan gelombang yang dapat merambat melalui medium tertentu. Bunyi tidak dapat merambat pada...","Ruang hampa","Udara","Air","Logam"],
+["Bumi memiliki satu satelit alami yang selalu mengelilinginya. Satelit alami Bumi adalah...","Bulan","Matahari","Mars","Venus"],
+["Gerhana Matahari merupakan peristiwa alam yang menarik untuk dipelajari. Gerhana Matahari terjadi saat... berada di antara Bumi dan Matahari.","Bulan","Mars","Venus","Jupiter"],
+["Magnet memiliki dua kutub yang saling berinteraksi satu sama lain. Kutub magnet yang sama akan...","Tolak-menolak","Tarik-menarik","Diam","Menyatu"],
+["Arus listrik merupakan aliran muatan listrik yang mengalir dalam rangkaian. Satuan kuat arus listrik adalah...","Ampere","Volt","Ohm","Watt"]
+],
+ips:[
+["Setiap provinsi di Indonesia memiliki ibu kota yang menjadi pusat pemerintahan. Ibu kota Provinsi Jawa Barat adalah...","Bandung","Bogor","Bekasi","Cirebon"],
+["Bumi terdiri dari beberapa benua yang memiliki karakteristik berbeda-beda. Benua terluas di dunia adalah...","Asia","Afrika","Eropa","Amerika"],
+["Samudra menutupi sebagian besar permukaan Bumi dan memiliki ukuran yang berbeda. Samudra terluas di dunia adalah...","Pasifik","Atlantik","Hindia","Arktik"],
+["Garis lintang dan garis bujur merupakan garis khayal yang membagi permukaan Bumi. Garis khatulistiwa (ekuator) terletak pada lintang...","0°","23,5°","66,5°","90°"],
+["ASEAN merupakan organisasi kerja sama negara-negara di Asia Tenggara. ASEAN didirikan di kota... pada 8 Agustus 1967.","Bangkok","Jakarta","Manila","Singapura"],
+["Indonesia memiliki banyak gunung api yang tersebar di berbagai pulau. Gunung tertinggi di Indonesia adalah...","Puncak Jaya","Gunung Kerinci","Gunung Rinjani","Gunung Semeru"],
+["Danau-danau di Indonesia memiliki ukuran dan keunikan masing-masing. Danau terbesar di Indonesia adalah...","Danau Toba","Danau Poso","Danau Singkarak","Danau Maninjau"],
+["Sungai-sungai besar di Indonesia memiliki peran penting bagi kehidupan masyarakat. Sungai terpanjang di Indonesia adalah...","Sungai Kapuas","Sungai Musi","Sungai Bengawan Solo","Sungai Citarum"],
+["Indonesia merupakan negara kepulauan dengan selat-selat yang memisahkan antar pulau. Selat yang memisahkan Pulau Jawa dan Sumatra adalah...","Selat Sunda","Selat Malaka","Selat Bali","Selat Makassar"],
+["Kebutuhan manusia dibedakan menjadi beberapa tingkatan berdasarkan kepentingannya. Kebutuhan primer manusia terdiri atas...","Sandang, pangan, dan papan","Mobil dan rumah mewah","Hiburan dan wisata","Gawai dan pulsa"],
+["Hukum permintaan dan penawaran memengaruhi harga barang di pasar. Menurut hukum permintaan, jika harga naik maka jumlah barang yang diminta cenderung...","Turun","Naik","Tetap","Tak terbatas"],
+["Uang memiliki fungsi yang sangat penting dalam kegiatan ekonomi masyarakat. Fungsi utama uang adalah sebagai...","Alat tukar","Barang antik","Hiasan","Alat pemanas"],
+["Setiap negara memiliki mata uangnya sendiri yang digunakan dalam transaksi. Mata uang negara Jepang adalah...","Yen","Won","Yuan","Ringgit"],
+["Negara-negara ASEAN memiliki mata uang yang berbeda-beda. Mata uang negara Malaysia adalah...","Ringgit","Baht","Peso","Dolar"],
+["Bank sentral memiliki peran penting dalam menjaga kestabilan ekonomi suatu negara. Bank sentral Indonesia adalah...","Bank Indonesia","Bank Mandiri","BRI","BNI"],
+["Koperasi merupakan badan usaha yang berdasarkan asas kekeluargaan. Bapak Koperasi Indonesia adalah...","Mohammad Hatta","Soekarno","Soeharto","Sutan Sjahrir"],
+["Kenaikan harga barang secara umum dan terus-menerus menjadi masalah ekonomi yang serius. Kenaikan harga barang secara umum dan terus-menerus disebut...","Inflasi","Deflasi","Devaluasi","Resesi"],
+["Pasar tradisional masih menjadi tempat favorit masyarakat untuk berbelanja kebutuhan sehari-hari. Ciri khas pasar tradisional adalah adanya...","Tawar-menawar","Harga pas","Mesin kasir otomatis","Pendingin ruangan"],
+["Kehidupan sosial masyarakat melibatkan hubungan antar individu dan kelompok. Hubungan timbal balik antarindividu atau kelompok disebut...","Interaksi sosial","Mobilitas","Konflik","Urbanisasi"],
+["Sosiologi sebagai ilmu yang mempelajari masyarakat memiliki tokoh-tokoh penting. Tokoh yang dijuluki Bapak Sosiologi adalah...","Auguste Comte","Karl Marx","Adam Smith","Max Weber"],
+["Setiap masyarakat memiliki aturan atau norma yang harus dipatuhi bersama. Aturan yang bersumber dari ajaran agama disebut norma...","Agama","Kesusilaan","Kesopanan","Hukum"],
+["Keluarga merupakan unit terkecil dalam kehidupan bermasyarakat. Kelompok sosial primer yang paling kecil adalah...","Keluarga","Sekolah","Perusahaan","Partai"],
+["Indonesia memiliki beragam suku bangsa yang tersebar di seluruh nusantara. Suku bangsa terbesar di Indonesia adalah suku...","Jawa","Sunda","Batak","Minang"],
+["Setiap daerah di Indonesia memiliki rumah adat yang khas dan unik. Rumah adat Gadang berasal dari...","Sumatera Barat","Jawa Tengah","Papua","Bali"],
+["Rumah adat Honai merupakan salah satu kekayaan budaya Indonesia yang khas. Rumah adat Honai berasal dari...","Papua","Aceh","Kalimantan","Sulawesi"]
+],
+informatika:[
+["Komputer terdiri dari berbagai komponen perangkat keras yang memiliki fungsi masing-masing. CPU adalah singkatan dari...","Central Processing Unit","Computer Personal Unit","Central Printing Utility","Control Power Unit"],
+["Perangkat keras komputer dibedakan menjadi perangkat input, proses, dan output. Perangkat input pada komputer adalah...","Keyboard","Monitor","Speaker","Printer"],
+["Perangkat output berfungsi menampilkan hasil pemrosesan data kepada pengguna. Perangkat output pada komputer adalah...","Monitor","Mouse","Scanner","Keyboard"],
+["RAM merupakan salah satu komponen penting yang mempengaruhi kinerja komputer. RAM berfungsi sebagai...","Memori sementara","Penyimpan permanen","Pendingin komputer","Penguat sinyal"],
+["HTML merupakan bahasa dasar yang digunakan untuk membuat halaman web. HTML adalah singkatan dari...","HyperText Markup Language","High Text Machine Language","Hyper Transfer Mark Language","Home Tool Markup Language"],
+["Peramban web atau browser digunakan untuk mengakses halaman di internet. Contoh browser (peramban web) adalah...","Google Chrome","Microsoft Word","Photoshop","WhatsApp"],
+["Internet memungkinkan kita mengakses berbagai informasi dari seluruh dunia. WWW adalah singkatan dari...","World Wide Web","World Web Window","Wide World Web","Web World Wire"],
+["Sistem operasi merupakan perangkat lunak utama yang mengendalikan komputer. Contoh sistem operasi adalah...","Windows","Excel","Chrome","Canva"],
+["Sistem bilangan biner merupakan dasar dari cara kerja komputer digital. Sistem bilangan biner hanya menggunakan angka...","0 dan 1","1 sampai 5","0 sampai 9","A sampai F"],
+["Satuan data dalam komputer digunakan untuk mengukur kapasitas penyimpanan. 1 byte sama dengan... bit.","8","4","16","1024"],
+["Kapasitas penyimpanan data diukur dengan satuan yang berjenjang. 1 kilobyte (KB) sama dengan... byte.","1024","1000000","100","512"],
+["Algoritma merupakan dasar penting dalam ilmu komputer dan pemrograman. Langkah-langkah logis dan sistematis untuk menyelesaikan masalah disebut...","Algoritma","Program","Variabel","Kompilator"],
+["Diagram alir atau flowchart menggunakan simbol-simbol khusus untuk menggambarkan proses. Simbol belah ketupat pada diagram alir (flowchart) menyatakan...","Keputusan","Proses","Mulai/Selesai","Masukan data"],
+["Python merupakan salah satu bahasa pemrograman yang populer di dunia. Python adalah contoh...","Bahasa pemrograman","Sistem operasi","Perangkat keras","Antivirus"],
+["Dalam pemrograman, variabel digunakan untuk menyimpan nilai yang dapat berubah. Tempat menyimpan data sementara dalam program disebut...","Variabel","Printer","Kabel","Router"],
+["Struktur kontrol dalam pemrograman membantu mengatur alur eksekusi program. Pengulangan perintah dalam program disebut...","Looping","Branching","Debugging","Compiling"],
+["Perintah if digunakan dalam pemrograman untuk mengambil keputusan berdasarkan kondisi. Perintah 'if' dalam pemrograman digunakan untuk...","Percabangan (kondisi)","Pengulangan","Mencetak gambar","Mematikan program"],
+["Keamanan digital sangat penting untuk melindungi data pribadi di internet. Penipuan online untuk mencuri data pribadi disebut...","Phishing","Browsing","Streaming","Coding"],
+["Kata sandi yang kuat sangat penting untuk melindungi akun dari peretasan. Kata sandi yang kuat sebaiknya berisi...","Kombinasi huruf, angka, dan simbol","Tanggal lahir saja","Nama sendiri","Angka 123456"],
+["Perangkat lunak atau software merupakan program yang menjalankan komputer. Contoh perangkat lunak (software) adalah...","Microsoft Word","Mouse","Monitor","Flashdisk"],
+["Setiap file komputer memiliki ekstensi yang menunjukkan jenis file tersebut. Ekstensi file Microsoft Word adalah...",".docx",".xlsx",".pptx",".jpg"],
+["Aplikasi pengolah angka digunakan untuk mengelola data berupa tabel dan perhitungan. Aplikasi pengolah angka (spreadsheet) adalah...","Microsoft Excel","Microsoft Word","PowerPoint","Notepad"],
+["Excel menyediakan banyak rumus atau fungsi untuk mempermudah perhitungan data. Rumus Excel untuk menjumlahkan sel adalah...","=SUM()","=ADD()","=PLUS()","=TOTALIZE"],
+["Alamat email memiliki format khusus yang harus diikuti oleh setiap pengguna. Tanda yang selalu ada pada alamat email adalah...","@","#","&","%"],
+["Jaringan komputer dibedakan berdasarkan cakupan wilayahnya. Jaringan komputer dalam area lokal disebut...","LAN","WAN","MAN","GAN"]
+],
+mtk:[
+["Operasi perkalian merupakan salah satu operasi dasar dalam matematika. Hasil dari 12 × 8 adalah...","96","86","108","88"],
+["Operasi pembagian merupakan kebalikan dari operasi perkalian. Hasil dari 144 ÷ 12 adalah...","12","14","11","13"],
+["Persen merupakan bentuk pecahan yang sering digunakan dalam kehidupan sehari-hari. Nilai dari 25% dari 200 adalah...","50","25","75","40"],
+["Persegi memiliki sisi-sisi yang sama panjang dan sudut yang sama besar. Luas persegi dengan sisi 9 cm adalah...","81 cm²","36 cm²","18 cm²","72 cm²"],
+["Persegi panjang memiliki dua pasang sisi yang sejajar dan sama panjang. Keliling persegi panjang dengan panjang 12 cm dan lebar 5 cm adalah...","34 cm","60 cm","17 cm","29 cm"],
+["Segitiga merupakan bangun datar yang memiliki tiga sisi dan tiga sudut. Luas segitiga dengan alas 10 cm dan tinggi 6 cm adalah...","30 cm²","60 cm²","16 cm²","36 cm²"],
+["Lingkaran adalah bangun datar yang memiliki jari-jari dan diameter. Luas lingkaran dengan jari-jari 7 cm (π = 22/7) adalah...","154 cm²","44 cm²","308 cm²","49 cm²"],
+["Keliling lingkaran berkaitan erat dengan diameter dan nilai π. Keliling lingkaran dengan diameter 14 cm (π = 22/7) adalah...","44 cm","88 cm","154 cm","22 cm"],
+["FPB adalah faktor persekutuan terbesar dari dua bilangan atau lebih. FPB dari 12 dan 18 adalah...","6","3","36","9"],
+["KPK adalah kelipatan persekutuan terkecil dari dua bilangan atau lebih. KPK dari 4 dan 6 adalah...","12","24","2","10"],
+["Pecahan dapat dijumlahkan jika penyebutnya sama atau disamakan terlebih dahulu. Hasil dari 3/4 + 1/4 adalah...","1","4/8","2/4","1/2"],
+["Penjumlahan pecahan dengan penyebut berbeda harus disamakan penyebutnya terlebih dahulu. Hasil dari 2/3 + 1/6 adalah...","5/6","3/9","3/6","1/2"],
+["Bilangan bulat mencakup bilangan positif, nol, dan bilangan negatif. Hasil dari -5 + 8 adalah...","3","-3","13","-13"],
+["Akar kuadrat adalah operasi kebalikan dari pemangkatan dua. Nilai dari √169 adalah...","13","14","12","17"],
+["Pemangkatan dua suatu bilangan disebut juga kuadrat. Hasil dari 5² + 3² adalah...","34","16","64","30"],
+["Pemangkatan tiga suatu bilangan disebut juga kubik. Hasil dari 2³ adalah...","8","6","9","5"],
+["Persamaan linear satu variabel dapat diselesaikan dengan mencari nilai variabelnya. Nilai x pada 2x + 6 = 14 adalah...","4","10","8","3"],
+["Persamaan linear juga dapat memuat pengurangan dan perkalian. Nilai x pada 3x − 5 = 10 adalah...","5","3","15","4"],
+["Sudut-sudut dalam segitiga memiliki jumlah yang selalu sama. Jumlah sudut dalam segitiga adalah...","180°","360°","90°","270°"],
+["Persegi memiliki empat sudut yang sama besar dan jumlah sudut tertentu. Jumlah sudut dalam persegi adalah...","360°","180°","270°","90°"],
+["Kubus merupakan bangun ruang yang semua sisinya berbentuk persegi. Volume kubus dengan rusuk 5 cm adalah...","125 cm³","25 cm³","150 cm³","15 cm³"],
+["Balok merupakan bangun ruang yang memiliki panjang, lebar, dan tinggi. Volume balok berukuran 6 × 4 × 3 cm adalah...","72 cm³","13 cm³","48 cm³","24 cm³"],
+["Rata-rata (mean) dihitung dengan menjumlahkan semua data lalu dibagi banyaknya data. Rata-rata dari 6, 8, dan 10 adalah...","8","7","9","24"],
+["Median adalah nilai tengah dari data yang telah diurutkan. Median dari 3, 5, 7, 9, 11 adalah...","7","5","9","35"],
+["Modus adalah nilai yang paling sering muncul dalam suatu data. Modus dari data 2, 3, 3, 4, 5 adalah...","3","2","4","5"]
+]
+};
+
+const SUBJECTS = [
+ {id:'ppkn',name:'PPKN',em:'🇮🇩',a:'#ef4444',b:'#f97316'},
+ {id:'sejarah',name:'Sejarah',em:'🏛️',a:'#a16207',b:'#eab308'},
+ {id:'bindo',name:'Bahasa Indonesia',em:'📖',a:'#e11d48',b:'#fb7185'},
+ {id:'bing',name:'Bahasa Inggris',em:'🔤',a:'#2563eb',b:'#38bdf8'},
+ {id:'islam',name:'Agama Islam',em:'🕌',a:'#059669',b:'#34d399'},
+ {id:'kristen',name:'Agama Kristen',em:'✝️',a:'#7c3aed',b:'#a78bfa'},
+ {id:'pjok',name:'PJOK',em:'⚽',a:'#ea580c',b:'#fbbf24'},
+ {id:'ipa',name:'IPA',em:'🔬',a:'#16a34a',b:'#a3e635'},
+ {id:'ips',name:'IPS',em:'🌏',a:'#0d9488',b:'#2dd4bf'},
+ {id:'informatika',name:'Informatika',em:'💻',a:'#0891b2',b:'#22d3ee'},
+ {id:'mtk',name:'Matematika',em:'➗',a:'#4f46e5',b:'#818cf8'}
+];
+
+const TIME_PER_Q = 30; // ⏱️ 30 detik per soal
+
+const $ = id => document.getElementById(id);
+const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+
+/* ===== AUDIO ===== */
+let ctx=null, master, sfxBus, musBus, sfxOn=store.get('sfxOn',true), musOn=store.get('musOn',true), musTimer=null, musStep=0;
+function initAudio(){
+  if(ctx) { if(ctx.state==='suspended') ctx.resume(); return; }
+  const AC = window.AudioContext||window.webkitAudioContext; if(!AC) return;
+  ctx = new AC();
+  master = ctx.createGain(); master.gain.value=.9;
+  const comp = ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination);
+  sfxBus = ctx.createGain(); sfxBus.gain.value=1; sfxBus.connect(master);
+  musBus = ctx.createGain(); musBus.gain.value=.13; musBus.connect(master);
+}
+function tone(f,t0,d,type='sine',v=.25,bus=sfxBus,slideTo){
+  if(!ctx) return;
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t0);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t0+d);
+  g.gain.setValueAtTime(.0001,t0);
+  g.gain.exponentialRampToValueAtTime(v,t0+.015);
+  g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+  o.connect(g); g.connect(bus); o.start(t0); o.stop(t0+d+.05);
+}
+function noise(t0,d,v=.2,freq=1200){
+  if(!ctx) return;
+  const len=ctx.sampleRate*d, buf=ctx.createBuffer(1,len,ctx.sampleRate), data=buf.getChannelData(0);
+  for(let i=0;i<len;i++) data[i]=(Math.random()*2-1)*(1-i/len);
+  const s=ctx.createBufferSource(); s.buffer=buf;
+  const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq;
+  const g=ctx.createGain(); g.gain.value=v;
+  s.connect(f); f.connect(g); g.connect(sfxBus); s.start(t0);
+}
+const N = {C4:261.6,D4:293.7,E4:329.6,F4:349.2,G4:392,A4:440,B4:493.9,C5:523.3,D5:587.3,E5:659.3,G5:784,A5:880,C6:1046.5,E6:1318.5};
+function sfx(name){
+  if(!sfxOn) return; initAudio(); if(!ctx) return;
+  const t=ctx.currentTime+.02;
+  switch(name){
+    case 'click': tone(700,t,.08,'triangle',.18,sfxBus,1000); break;
+    case 'hover': tone(900,t,.04,'sine',.06); break;
+    case 'start':
+      [N.C4,N.E4,N.G4,N.C5,N.E5,N.G5].forEach((f,i)=>tone(f,t+i*.07,.18,'square',.12));
+      tone(N.C6,t+.45,.5,'triangle',.18); break;
+    case 'correct':
+      [N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>{tone(f,t+i*.08,.28,'triangle',.28); tone(f*2,t+i*.08,.2,'sine',.08);});
+      tone(N.E6,t+.34,.5,'sine',.16); noise(t+.3,.25,.06,6000); break;
+    case 'wrong':
+      tone(220,t,.35,'sawtooth',.22,sfxBus,90);
+      tone(165,t+.12,.4,'square',.16,sfxBus,70); noise(t,.18,.1,300); break;
+    case 'timeout':
+      [N.G4,N.E4,N.C4].forEach((f,i)=>tone(f,t+i*.14,.3,'sawtooth',.18,sfxBus,f*.7)); break;
+    case 'tick': tone(1200,t,.05,'square',.1); break;
+    case 'tickfast': tone(1700,t,.07,'square',.16); tone(850,t+.08,.05,'square',.08); break;
+    case 'combo':
+      [N.G5,N.A5,N.C6,N.E6].forEach((f,i)=>tone(f,t+i*.05,.15,'sine',.16)); break;
+    case 'win':
+      [[N.C5,0],[N.C5,.15],[N.C5,.3],[N.E5,.45],[N.G5,.7],[N.E5,.95],[N.G5,1.15],[N.C6,1.4]].forEach(([f,d])=>{
+        tone(f,t+d,.35,'square',.14); tone(f/2,t+d,.35,'triangle',.18);});
+      noise(t+1.4,.5,.1,5000); break;
+    case 'lose':
+      [N.E4,N.D4,N.C4].forEach((f,i)=>tone(f,t+i*.28,.5,'triangle',.22,sfxBus,f*.95)); break;
+  }
+}
+const MEL = [N.E5,N.G5,N.A5,N.G5,N.E5,N.D5,N.C5,N.D5,N.E5,N.G5,N.C6,N.A5,N.G5,N.E5,N.D5,N.E5];
+const BASS = [130.8,110,87.3,98];
+function musicTick(){
+  if(!ctx||!musOn) return;
+  const t=ctx.currentTime+.05, s=musStep%MEL.length;
+  tone(MEL[s],t,.25,'triangle',.2,musBus);
+  if(s%4===0) tone(BASS[Math.floor(s/4)%BASS.length],t,.5,'sine',.5,musBus);
+  musStep++;
+}
+function startMusic(){ if(!musOn) return; initAudio(); if(!ctx) return; stopMusic(); musTimer=setInterval(musicTick,240); }
+function stopMusic(){ if(musTimer){clearInterval(musTimer);musTimer=null;} }
+function refreshAudioBtns(){
+  $('btnMusic').classList.toggle('off',!musOn);
+  $('btnSfx').classList.toggle('off',!sfxOn);
+  $('btnSfx').textContent = sfxOn?'🔊':'🔇';
+}
+$('btnMusic').onclick=()=>{ initAudio(); musOn=!musOn; store.set('musOn',musOn); refreshAudioBtns(); musOn?startMusic():stopMusic(); };
+$('btnSfx').onclick=()=>{ initAudio(); sfxOn=!sfxOn; store.set('sfxOn',sfxOn); refreshAudioBtns(); if(sfxOn) sfx('click'); };
+
+/* ===== FX ===== */
+const fx=$('fx'), fctx=fx.getContext('2d'); let parts=[], fxRun=false;
+function resizeFx(){fx.width=innerWidth;fx.height=innerHeight;}
+addEventListener('resize',resizeFx); resizeFx();
+function burst(x,y,n=60){
+  const colors=['#fde047','#f472b6','#22d3ee','#a78bfa','#4ade80','#fb923c'];
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=3+Math.random()*7;
+    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-4,g:.22,r:3+Math.random()*5,c:colors[i%colors.length],life:70+Math.random()*50,rot:Math.random()*6,vr:(Math.random()-.5)*.4});
+  }
+  if(!fxRun){fxRun=true;requestAnimationFrame(fxLoop);}
+}
+function rain(){
+  for(let i=0;i<120;i++){
+    parts.push({x:Math.random()*innerWidth,y:-20-Math.random()*300,vx:(Math.random()-.5)*2,vy:2+Math.random()*4,g:.03,r:4+Math.random()*5,
+      c:['#fde047','#f472b6','#22d3ee','#a78bfa','#4ade80','#fb923c'][i%6],life:260,rot:0,vr:.2});
+  }
+  if(!fxRun){fxRun=true;requestAnimationFrame(fxLoop);}
+}
+function fxLoop(){
+  fctx.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life--;p.rot+=p.vr;
+    fctx.save();fctx.translate(p.x,p.y);fctx.rotate(p.rot);fctx.globalAlpha=Math.min(1,p.life/30);
+    fctx.fillStyle=p.c;fctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);fctx.restore();
+  });
+  if(parts.length) requestAnimationFrame(fxLoop); else {fxRun=false;fctx.clearRect(0,0,fx.width,fx.height);}
+}
+(function mkStars(){
+  const box=$('stars'); for(let i=0;i<40;i++){
+    const s=document.createElement('i'); s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=(Math.random()*4)+'s'; s.style.animationDuration=(3+Math.random()*3)+'s'; box.appendChild(s);
+  }
+})();
+function setTheme(a,b){
+  const r=document.documentElement.style; r.setProperty('--c1',a); r.setProperty('--c2',b);
+}
+function flash(kind){ const f=$('flash'); f.className='flash'; void f.offsetWidth; f.className='flash '+kind; }
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== MENU ===== */
+function buildMenu(){
+  const g=$('grid'); g.innerHTML='';
+  SUBJECTS.forEach(s=>{
+    const best=store.get('best_'+s.id,0);
+    const b=document.createElement('button'); b.className='subj';
+    b.style.setProperty('--a',s.a); b.style.setProperty('--b',s.b);
+    b.innerHTML=`<span class="em">${s.em}</span><div class="nm">${s.name}</div>
+      <div class="st"><span>⭐ ${best}</span><span>📝 25 soal</span></div>`;
+    b.onmouseenter=()=>sfx('hover');
+    b.onclick=()=>startGame(s.id);
+    g.appendChild(b);
+  });
+}
+
+/* ===== GAME ===== */
+let G=null, timerInt=null;
+function startGame(id){
+  initAudio(); const s=SUBJECTS.find(x=>x.id===id);
+  setTheme(s.a,s.b);
+  const qs = shuffle([...BANK[id]]).slice(0,25);
+  G={ id, subj:s, qs, i:0, score:0, right:0, wrong:0, timeout:0, combo:0, locked:false, timeLeft:TIME_PER_Q };
+  $('qSubj').textContent = s.em+' '+s.name;
+  sfx('start'); startMusic(); show('sQuiz'); loadQ();
+}
+function updateTimerDisplay(){
+  const t = $('qTimer');
+  t.textContent = '⏱️ '+G.timeLeft+'s';
+  t.classList.remove('warn','danger');
+  if(G.timeLeft <= 5) t.classList.add('danger');
+  else if(G.timeLeft <= 10) t.classList.add('warn');
+}
+function startTimer(){
+  clearInterval(timerInt);
+  updateTimerDisplay();
+  timerInt = setInterval(()=>{
+    if(!G || G.locked){ clearInterval(timerInt); return; }
+    G.timeLeft--;
+    updateTimerDisplay();
+    if(G.timeLeft <= 5 && G.timeLeft > 0) sfx('tickfast');
+    else if(G.timeLeft <= 10 && G.timeLeft > 0) sfx('tick');
+    if(G.timeLeft <= 0){ clearInterval(timerInt); timeUp(); }
+  }, 1000);
+}
+function loadQ(){
+  const q = G.qs[G.i];
+  G.locked = false;
+  G.timeLeft = TIME_PER_Q;
+  $('qno').textContent = `Soal ${G.i+1} / ${G.qs.length}`;
+  $('qtext').textContent = q[0];
+  $('bar').style.width = (G.i/G.qs.length*100)+'%';
+  $('qScore').textContent = '⭐ '+G.score;
+  $('qCombo').textContent = '🔥 x'+G.combo;
+  $('fb').textContent = ''; $('fb').className='feedback';
+  updateTally(0);
+  const opts = shuffle([{t:q[1],c:true},{t:q[2]},{t:q[3]},{t:q[4]}]);
+  G.opts = opts;
+  const box = $('opts'); box.innerHTML='';
+  opts.forEach((o,k)=>{
+    const b=document.createElement('button'); b.className='opt o'+k;
+    b.innerHTML=`<span class="l">${'ABCD'[k]}</span><span>${o.t}</span>`;
+    b.onclick=()=>answer(k);
+    b.onmouseenter=()=>{ if(!G.locked) sfx('hover'); };
+    box.appendChild(b);
+  });
+  startTimer();
+}
+function updateTally(bump){
+  const r=$('qRight'), w=$('qWrong');
+  r.textContent = '✅ '+G.right; w.textContent = '❌ '+G.wrong;
+  if(bump===1){ r.classList.remove('bump'); void r.offsetWidth; r.classList.add('bump'); }
+  if(bump===-1){ w.classList.remove('bump'); void w.offsetWidth; w.classList.add('bump'); }
+}
+function revealCorrect(){
+  const btns=[...$('opts').children];
+  G.opts.forEach((o,k)=>{ if(o.c) btns[k].classList.add('right'); });
+  btns.forEach(b=>b.disabled=true);
+}
+function answer(k){
+  if(G.locked) return; G.locked=true;
+  clearInterval(timerInt);
+  const btns=[...$('opts').children], ok=!!G.opts[k].c, fb=$('fb');
+  btns.forEach(b=>b.disabled=true);
+  if(ok){
+    G.right++; G.combo++;
+    const bonus = Math.min(200, G.combo*10);
+    const pts = 100 + bonus;
+    G.score += pts;
+    btns[k].classList.add('right');
+    btns.forEach((b,i)=>{ if(i!==k) b.classList.add('dim'); });
+    fb.innerHTML = `✅ Benar! +${pts} poin`+(G.combo>=3?` 🔥 Combo x${G.combo}`:'');
+    fb.className='feedback ok';
+    sfx('correct'); flash('ok');
+    const r=btns[k].getBoundingClientRect(); burst(r.left+r.width/2, r.top+r.height/2, G.combo>=3?80:50);
+  }else{
+    G.wrong++; G.combo=0;
+    btns[k].classList.add('wrong'); revealCorrect();
+    btns.forEach((b,i)=>{ if(i!==k && !G.opts[i].c) b.classList.add('dim'); });
+    fb.innerHTML = `❌ Salah! Jawaban benar disorot hijau.`;
+    fb.className='feedback no';
+    sfx('wrong'); flash('no');
+  }
+  $('qScore').textContent = '⭐ '+G.score;
+  $('qCombo').textContent = '🔥 x'+G.combo;
+  updateTally(ok?1:-1);
+  setTimeout(()=>{
+    if(!G) return;
+    G.i++;
+    if(G.i >= G.qs.length) finish();
+    else loadQ();
+  }, ok?1400:2000);
+}
+function timeUp(){
+  if(G.locked) return;
+  G.locked = true;
+  G.timeout++;
+  G.combo = 0;
+  revealCorrect();
+  $('fb').innerHTML = `⏰ Waktu habis! Jawaban benar disorot hijau.`;
+  $('fb').className = 'feedback no';
+  $('qCombo').textContent = '🔥 x0';
+  sfx('timeout'); flash('no');
+  setTimeout(()=>{
+    if(!G) return;
+    G.i++;
+    if(G.i >= G.qs.length) finish();
+    else loadQ();
+  }, 2000);
+}
+function finish(){
+  clearInterval(timerInt);
+  const pct = G.right / G.qs.length;
+  const stars = pct>=.9?3:pct>=.7?2:pct>=.4?1:0;
+  const best = store.get('best_'+G.id,0);
+  if(G.score > best) store.set('best_'+G.id, G.score);
+  let trophy, title, msg;
+  if(pct===1){ trophy='👑'; title='SEMPURNA!'; msg='Luar biasa! Semua soal benar.'; }
+  else if(pct>=.8){ trophy='🏆'; title='Hebat Sekali!'; msg='Nilai kamu sangat bagus!'; }
+  else if(pct>=.6){ trophy='🥈'; title='Bagus!'; msg='Terus berlatih, kamu pasti bisa lebih baik.'; }
+  else if(pct>=.4){ trophy='🥉'; title='Lumayan'; msg='Ayo belajar lagi dan coba soal yang baru.'; }
+  else { trophy='📚'; title='Semangat Belajar!'; msg='Jangan menyerah, teruslah berlatih.'; }
+  $('rTrophy').textContent = trophy;
+  $('rTitle').textContent = title;
+  $('rStars').textContent = '⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  $('rScore').textContent = G.score;
+  $('rRight').textContent = G.right+'/'+G.qs.length;
+  $('rWrong').textContent = G.wrong;
+  $('rTimeout').textContent = G.timeout;
+  $('rBest').textContent = Math.max(best, G.score);
+  $('rMsg').textContent = msg;
+  show('sResult');
+  if(pct>=.6){ sfx('win'); rain(); } else sfx('lose');
+  stopMusic();
+}
+$('btnAgain').onclick = ()=>{ if(G){ sfx('click'); startGame(G.id); } };
+$('btnMenu').onclick = ()=>{ sfx('click'); backToMenu(); };
+$('btnBack').onclick = ()=>{
+  if(confirm('Kembali ke daftar mata pelajaran?\nKuis yang belum selesai ini akan dihentikan.')){
+    sfx('click'); clearInterval(timerInt); G=null; backToMenu();
+  }
+};
+function backToMenu(){
+  setTheme('#6366f1','#ec4899'); buildMenu(); show('sMenu'); startMusic();
+}
+addEventListener('keydown',e=>{
+  if(!$('sQuiz').classList.contains('active')||!G||G.locked) return;
+  const k={'1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3}[e.key.toLowerCase()];
+  if(k!==undefined) answer(k);
+});
+let first=true;
+['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{
+  if(first){ first=false; initAudio(); if(musOn) startMusic(); }
+},{passive:true}));
+
+refreshAudioBtns(); buildMenu();
+</script>
+</body>
+</html>
